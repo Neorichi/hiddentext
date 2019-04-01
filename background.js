@@ -179,8 +179,15 @@ $(function() {
         if(global_enablencr=='on'){
            if(e.keyCode == 13){
              if(clearmsg('_2S1VP').length!=0){
-               var userto = document.getElementsByClassName('_2zCDG');
-               setdata_w(global_data,userto[0].outerText)
+               try {
+                 var userto = document.getElementsByClassName('_3XrHh');
+                 setdata_w(global_data,userto[0].outerText)
+               } catch (e) {
+                 var userto = "None"
+                 setdata_w(global_data,userto)
+               }
+
+
                $('._2nmDZ').animate({scrollTop:document.getElementsByClassName('_2nmDZ')[0].scrollHeight}, 100);
              }
            }
