@@ -102,7 +102,8 @@ function setdata(text,userto,classname){
   var output = document.getElementsByClassName(classname)
   var encode_ = encodeURIComponent(output[0].innerHTML);
   if(encode_.search("%E2%80")<0){
-    hidemsg = convert(text + " to: " + userto);
+    //hidemsg = convert(text + " to: " + userto);
+    hidemsg = convert(text);
 
     var strFirst = output[0].innerHTML.substring(0,1);
     var strLast = output[0].innerHTML.substring(1,);
@@ -120,14 +121,15 @@ function setdata_w(text,userto) {
     });
 
     try {
-      var output = document.querySelector("div._2S1VP");
+      var output = document.querySelector("div._3u328");
       var encode_ = encodeURIComponent(output.innerHTML);
       if(encode_.search("%E2%80")<0){
 
 
 
 
-        hidemsg = convert(text + " to: " + userto);
+        //hidemsg = convert(text + " to: " + userto);
+        hidemsg = convert(text);
 
 
         var strFirst = output.innerHTML.substring(0,1);
@@ -175,10 +177,11 @@ $(function() {
   //Whatsapp
   if(document.domain=="web.whatsapp.com"){
   $('body').click(function(e) {
-      document.getElementsByClassName('_2S1VP')[0].onkeydown = function(e){
+    try {
+      document.getElementsByClassName('_3u328')[0].onkeydown = function(e){
         if(global_enablencr=='on'){
            if(e.keyCode == 13){
-             if(clearmsg('_2S1VP').length!=0){
+             if(clearmsg('_3u328').length!=0){
                try {
                  var userto = document.getElementsByClassName('_3XrHh');
                  setdata_w(global_data,userto[0].outerText)
@@ -188,11 +191,14 @@ $(function() {
                }
 
 
-               $('._2nmDZ').animate({scrollTop:document.getElementsByClassName('_2nmDZ')[0].scrollHeight}, 100);
+               $('._1_keJ').animate({scrollTop:document.getElementsByClassName('_1_keJ')[0].scrollHeight}, 100);
              }
            }
          }
       };
+    } catch (e) {
+      console.log("Whatsapp not label found")
+    }
 
   })
 
