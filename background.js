@@ -171,17 +171,21 @@ function chromevalue(){
 
 }
 
+
 $(function() {
 
-  console.log("Hello")
+  //console.log("Hello whatsapp")
   //Whatsapp
   if(document.domain=="web.whatsapp.com"){
+
   $('body').click(function(e) {
     try {
-      document.getElementsByClassName('_3u328')[0].onkeydown = function(e){
+      var numdivs = document.getElementsByClassName('copyable-text').length
+      var classnamediv = document.getElementsByClassName('copyable-text')[numdivs-1].classList[0]
+      document.getElementsByClassName(classnamediv)[0].onkeydown = function(e){
         if(global_enablencr=='on'){
            if(e.keyCode == 13){
-             if(clearmsg('_3u328').length!=0){
+             if(clearmsg(classnamediv).length!=0){
                try {
                  var userto = document.getElementsByClassName('_3XrHh');
                  setdata_w(global_data,userto[0].outerText)
@@ -189,9 +193,12 @@ $(function() {
                  var userto = "None"
                  setdata_w(global_data,userto)
                }
+                try {
+                  var classnamedivtoscroll = $('#main div:nth-child(5)').className
+                  $('#main div:nth-child(5)').animate({scrollTop:document.getElementsByClassName(classnamedivtoscroll)[0].scrollHeight+100}, 100);
+                } catch (e) {
 
-
-               $('._1_keJ').animate({scrollTop:document.getElementsByClassName('_1_keJ')[0].scrollHeight}, 100);
+                }
              }
            }
          }
