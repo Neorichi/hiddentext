@@ -1,6 +1,5 @@
 # Hiddentext
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
 Using invisible Unicode Character 'ZERO WIDTH SPACE' (U+200B) to send information into Telegram and Whatsapp Web Clients.
 
