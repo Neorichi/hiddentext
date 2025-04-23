@@ -1,0 +1,44 @@
+#secreto-panel {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  background: var(--panel-bg, #fff);
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  font-family: sans-serif;
+  font-size: 13px;
+  z-index: 9999;
+  width: 230px;
+  color: var(--panel-text, #000);
+}
+
+#secreto-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 14px;
+  font-size: 14px;
+  background: #0088cc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 9999;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  font-family: sans-serif;
+}
+
+#secreto-panel input[type="text"] {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.secreto-insertado {
+  font-size: 0.8em;
+  margin: 6px;
+  color: var(--secreto-color, #999);
+}

@@ -1,18 +1,28 @@
 {
-  "name": "HiddenText",
+  "manifest_version": 3,
+  "name": "Hiddentext",
   "version": "1.1",
-  "description": "",
-  "manifest_version": 2,
-  "permissions": ["tabs","activeTab", "declarativeContent", "storage"],
-  "browser_action": {
-    "name": "HiddenText",
-    "icons": ["icon.png"],
-    "default_icon": "icon.png",
-    "default_popup": "popup.html"
+  "description": "Hide encrypted secrets in WhatsApp and Telegram Web messages.",
+  "permissions": ["storage", "scripting", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [{
+    "resources": ["private_key"],
+    "matches": ["<all_urls>"]
+  }],
+  "action": {
+    "default_icon": {
+      "128": "icon.png"
+    }
   },
-  "icons": { "128": "icon.png" },
-  "content_scripts": [ {
-    "js": [ "jquery.min.js", "background.js" ],
-    "matches": [ "https://web.telegram.org/*","https://web.whatsapp.com/*"]
-  }]
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.telegram.org/*",
+        "https://web.whatsapp.com/*"
+      ],
+      "js": ["crypto-js.min.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ]
 }
