@@ -10,7 +10,8 @@ Using invisible Unicode Character 'WORD JOINER' (U+2060) and 'INVISIBLE SEPARATO
 2. Unzip the zip file
 3. Change the secret text into private_key (this secret is used for encryption in aes256)
 4. Go to chrome://extensions/
-5. Click Load unpacked extension...
+5. Enable developer mode
+6. Click Load unpacked extension...
 
 
 License
