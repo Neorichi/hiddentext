@@ -52,61 +52,88 @@
     }
 
     async function showSecretsInMessages() {
-        const show = localStorage.getItem("show-secrets") !== "false";
-        const key = await getKey();
-        const messages = document.querySelectorAll(isWhatsApp ? '[data-id]' : '[data-message-id]');
+        try {
+          const show = localStorage.getItem("show-secrets") !== "false";
+          const key = await getKey();
+          if (!show) {
+            // Clean inserted tags
+            document.querySelectorAll(".inserted-secret").forEach((el) => el.remove());
+            document.querySelectorAll(".checked-secret").forEach((m) => m.classList.remove("checked-secret"));
+            return;
+          }
 
-        messages.forEach(m => {
-            const alreadyHas = m.querySelector('.inserted-secret');
+          // Select messages according to platform. As a fallback, grab all role="row"/[data-id] candidates.
+          let messages = [];
+          if (isWhatsApp) {
+            messages = document.querySelectorAll('[data-id], [role="row"]');
+          } else if (isTelegram) {
+            messages = Array.from(document.querySelectorAll('[data-message-id], [data-peer-id]'))
+              .filter(m =>
+                !m.isContentEditable &&                     // descarta si el elemento es editable
+                !m.closest('[contenteditable="true"]') &&   // descarta si está dentro de un input editable
+                !m.classList.contains('input-message-input') // descarta específicamente el campo de escritura
+              );
+          } else {
+            messages = document.querySelectorAll('[data-id], [data-message-id], [role="row"]');
+          }
 
-            if (!show) {
-                if (alreadyHas) alreadyHas.remove();
-                m.classList.remove("checked-secret");
+
+
+
+          messages.forEach((m) => {
+            try {
+              const alreadyHas = m.querySelector(".inserted-secret");
+              if (m.classList.contains("checked-secret") && alreadyHas) return;
+
+              const text = m.innerText || "";
+              if (!text) {
+                m.classList.add("checked-secret");
                 return;
-            }
+              }
 
-            if (m.classList.contains("checked-secret") && alreadyHas) return;
-
-            const text = m.innerText;
-            const chars = [...text];
-            const invisibles = [];
-
-            for (let i = 0; i < chars.length; i++) {
+              // Collect leading invisibles
+              const chars = [...text];
+              const invisibles = [];
+              for (let i = 0; i < chars.length; i++) {
                 if (chars[i] === ZERO || chars[i] === ONE) {
-                    invisibles.push(chars[i]);
+                  invisibles.push(chars[i]);
                 } else {
-                    break;
+                  break;
                 }
-            }
+              }
 
-            if (invisibles.length > 0 && !alreadyHas) {
+              if (invisibles.length > 0 && !alreadyHas) {
                 const encrypted = invisiblesToText(invisibles);
-                let secret;
-                try {
-                    secret = decryptText(encrypted, key);
-                } catch {
-                    secret = "[Decryption error]";
-                }
+                const secret = decryptText(encrypted, key);
                 const tag = document.createElement("span");
                 tag.className = "inserted-secret";
                 tag.textContent = `${secret}`;
-                tag.style.color = 'crimson';
-                tag.style.margin = '4px 0';
-                tag.style.fontSize = '12px';
-                tag.style.alignSelf = 'flex-start';
-                tag.style.maxWidth = '60%';
-                tag.style.wordBreak = 'break-word';
-                tag.style.padding = '2px 6px';
-                tag.style.background = 'rgba(220, 20, 60, 0.1)';
-                tag.style.borderLeft = '3px solid crimson';
-                tag.style.borderRadius = '4px';
-                tag.style.marginLeft = '8px';
-                m.appendChild(tag);
-            }
+                Object.assign(tag.style, {
+                float: "left",
+                marginRight: "20%",
+                color: "crimson",
+                fontSize: "12px",
+                padding: "2px 6px",
+                background: "rgba(220, 20, 60, 0.1)",
+                borderLeft: "3px solid crimson",
+                borderRadius: "4px",
+                display: "inline-block", // 👈 asegura que quede en línea
+                verticalAlign: "middle"
+              });
 
-            m.classList.add("checked-secret");
-        });
-    }
+              // Inserta al principio (secreto antes que texto)
+              m.appendChild(tag, m.firstChild);
+              }
+
+              m.classList.add("checked-secret");
+            } catch (inner) {
+              console.warn("Error procesando un mensaje:", inner);
+            }
+          });
+        } catch (e) {
+          console.error("showSecretsInMessages() falló:", e);
+        }
+      }
 
     const panel = document.createElement("div");
     panel.id = "secret-panel";
@@ -164,9 +191,10 @@
 
     const autoInsertCheckbox = document.createElement("input");
     autoInsertCheckbox.type = "checkbox";
-    autoInsertCheckbox.style.transform = "scale(1.1)";
+    autoInsertCheckbox.style.cssText = "width: 16px !important; height: 16px !important; display: inline-block !important; visibility: visible !important; opacity: 1 !important; margin: 0 !important; cursor: pointer !important; flex-shrink: 0 !important;";
     const autoInsertText = document.createElement("span");
     autoInsertText.textContent = "Auto insert";
+    autoInsertText.style.cssText = "margin-left: 20px;";
 
     autoInsertContainer.appendChild(autoInsertCheckbox);
     autoInsertContainer.appendChild(autoInsertText);
@@ -180,11 +208,12 @@
 
     const viewCheckbox = document.createElement("input");
     viewCheckbox.type = "checkbox";
-    viewCheckbox.style.transform = "scale(1.1)";
+    viewCheckbox.style.cssText = "width: 16px !important; height: 16px !important; display: inline-block !important; visibility: visible !important; opacity: 1 !important; margin: 0 !important; cursor: pointer !important; flex-shrink: 0 !important;";
     viewCheckbox.checked = localStorage.getItem("show-secrets") !== "false";
 
     const viewText = document.createElement("span");
     viewText.textContent = "Show secrets";
+    viewText.style.cssText = "margin-left: 20px;";
 
     toggleViewContainer.appendChild(viewCheckbox);
     toggleViewContainer.appendChild(viewText);
@@ -262,28 +291,42 @@
         };
         startObserver();
     } else if (isTelegram) {
+        let lastProcessedText = "";
+
         const inputObserver = new MutationObserver(async () => {
             if (!autoInsertCheckbox.checked) return;
             const input = document.querySelector('[contenteditable="true"]');
-            if (!input || !input.innerText.trim()) return;
+            if (!input) return;
 
             const text = input.innerText.trim();
+            if (!text || text === lastProcessedText) return;
+
             const secret = inputFixedSecret.value;
             if (!secret || text.startsWith(ZERO) || text.startsWith(ONE)) return;
 
-            const key = await getKey();
-            const hidden = textToInvisibles(encryptText(secret, key));
-            input.innerText = hidden + text;
+            lastProcessedText = text;
 
+            const key = await getKey();
+            const encrypted = encryptText(secret, key);
+            const hidden = textToInvisibles(encrypted);
+
+            // Usar textContent en lugar de innerText para preservar caracteres invisibles
+            const textNode = document.createTextNode(hidden);
+            input.insertBefore(textNode, input.firstChild);
+
+            // Mover cursor al final
             const sel = window.getSelection();
-            sel.selectAllChildren(input);
-            sel.collapseToEnd();
+            const range = document.createRange();
+            range.selectNodeContents(input);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
         });
 
         const waitForInput = setInterval(() => {
             const input = document.querySelector('[contenteditable="true"]');
             if (input) {
-                inputObserver.observe(input, { childList: true, subtree: true });
+                inputObserver.observe(input, { childList: true, subtree: true, characterData: true });
                 clearInterval(waitForInput);
             }
         }, 500);
